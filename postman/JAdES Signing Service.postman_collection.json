@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "JAdES Signing Service",
+    "description": "CSC signing API demo requests with mock response examples.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sad",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "http://127.0.0.1:8000/health"
+      },
+      "response": [
+        {
+          "name": "Healthy",
+          "originalRequest": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8000/health"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"healthy\",\n  \"service\": \"JAdES Signing Service\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "OAuth 2.0 / Client credentials token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  pm.collectionVariables.set('accessToken', pm.response.json().access_token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "key": "client_id",
+              "value": "csc_demo_client"
+            },
+            {
+              "key": "client_secret",
+              "value": "csc_demo_client_secret"
+            }
+          ]
+        },
+        "url": "http://127.0.0.1:8000/oauth2/token"
+      },
+      "response": [
+        {
+          "name": "Mock token",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                },
+                {
+                  "key": "client_id",
+                  "value": "csc_demo_client"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "csc_demo_client_secret"
+                }
+              ]
+            },
+            "url": "http://127.0.0.1:8000/oauth2/token"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"access_token\": \"mock-access-token\",\n  \"token_type\": \"Bearer\",\n  \"expires_in\": 3600\n}"
+        }
+      ]
+    },
+    {
+      "name": "CSC v2 / Authorize hash",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  pm.collectionVariables.set('sad', pm.response.json().SAD);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"credentialID\": \"jades_signing_credential\",\n  \"numSignatures\": 1,\n  \"hashes\": [\"ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=\"],\n  \"hashAlgorithmOID\": \"2.16.840.1.101.3.4.2.1\"\n}"
+        },
+        "url": "http://127.0.0.1:8000/csc/v2/credentials/authorize"
+      },
+      "response": [
+        {
+          "name": "Mock authorization",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialID\": \"jades_signing_credential\",\n  \"numSignatures\": 1,\n  \"hashes\": [\"ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=\"],\n  \"hashAlgorithmOID\": \"2.16.840.1.101.3.4.2.1\"\n}"
+            },
+            "url": "http://127.0.0.1:8000/csc/v2/credentials/authorize"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"SAD\": \"mock-sad-token\",\n  \"expiresIn\": 300\n}"
+        }
+      ]
+    },
+    {
+      "name": "CSC v2 / Sign hash",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"credentialID\": \"jades_signing_credential\",\n  \"SAD\": \"{{sad}}\",\n  \"hashes\": [\"ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=\"],\n  \"hashAlgorithmOID\": \"2.16.840.1.101.3.4.2.1\",\n  \"signAlgo\": \"1.2.840.113549.1.1.1\"\n}"
+        },
+        "url": "http://127.0.0.1:8000/csc/v2/signatures/signHash"
+      },
+      "response": [
+        {
+          "name": "Mock signature (illustrative)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialID\": \"jades_signing_credential\",\n  \"SAD\": \"{{sad}}\",\n  \"hashes\": [\"ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=\"],\n  \"hashAlgorithmOID\": \"2.16.840.1.101.3.4.2.1\",\n  \"signAlgo\": \"1.2.840.113549.1.1.1\"\n}"
+            },
+            "url": "http://127.0.0.1:8000/csc/v2/signatures/signHash"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"signatures\": [\"bW9jay1zaWduYXR1cmU=\"]\n}"
+        }
+      ]
+    }
+  ]
+}
